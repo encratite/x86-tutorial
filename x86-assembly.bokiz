@@ -76,18 +76,18 @@
 
 [table[function]
 [row [column a][column b][column [monospace a << b]]]
-[row [column [monospace 11010001010010100001101010001010]][column 1][column [monospace 1010001010010100001101010001010<span class="bit_shift">0</span>]]]
-[row [column [monospace 00000000100000001100000001011111]][column 3][column [monospace 10001010010100001101010001010<span class="bit_shift">000</span>]]]
-[row [column [monospace 11100000010100110001010010111010]][column 2][column [monospace 010001010010100001101010001010<span class="bit_shift">00</span>]]]
-[row [column [monospace 00001001101110000000001110000000]][column 29][column [monospace 000<span class="bit_shift">00000000000000000000000000000</span>]]]
+[row [column [monospace 11010001010010100001101010001010]][column 1][column [monospace 1010001010010100001101010001010[group[bitShift] 0]]]]
+[row [column [monospace 00000000100000001100000001011111]][column 3][column [monospace 10001010010100001101010001010[group[bitShift] 000]]]]
+[row [column [monospace 11100000010100110001010010111010]][column 2][column [monospace 010001010010100001101010001010[group[bitShift] 00]]]]
+[row [column [monospace 00001001101110000000001110000000]][column 29][column [monospace 000[group[bitShift] 00000000000000000000000000000]]]]
 ]
 
 [table[function]
 [row [column a][column b][column [monospace a > b]]]
-[row [column [monospace 11010001010010100001101010001010]][column 1][column [monospace <span class="bit_shift">0</span>1101000101001010000110101000101]]]
-[row [column [monospace 00000000100000001100000001011111]][column 3][column [monospace <span class="bit_shift">000</span>00000000100000001100000001011]]]
-[row [column [monospace 11100000010100110001010010111010]][column 2][column [monospace <span class="bit_shift">00</span>010001010010100001101010001010]]]
-[row [column [monospace 00001001101110000000001110000000]][column 27][column [monospace <span class="bit_shift">000000000000000000000000000</span>00001]]]
+[row [column [monospace 11010001010010100001101010001010]][column 1][column [monospace [group[bitShift] 0]1101000101001010000110101000101]]]
+[row [column [monospace 00000000100000001100000001011111]][column 3][column [monospace [group[bitShift] 000]00000000100000001100000001011]]]
+[row [column [monospace 11100000010100110001010010111010]][column 2][column [monospace [group[bitShift] 00]010001010010100001101010001010]]]
+[row [column [monospace 00001001101110000000001110000000]][column 27][column [monospace [group[bitShift] 000000000000000000000000000]00001]]]
 ]
 
 
@@ -161,7 +161,7 @@ our_loop:
 [table[bitAddition]
 [row [column Summand 1][column [monospace &nbsp;&nbsp;11111111111111111111111111111111]]]
 [row [column Summand 2][column [monospace + 00000000000000000000000000000001]]]
-[row [column Sum][column [monospace &nbsp;<span class="bit_shift">1</span>00000000000000000000000000000000]]]
+[row [column Sum][column [monospace &nbsp;[group[bitShift] 1]00000000000000000000000000000000]]]
 ]
 
 [paragraph The result requires at least 33 bits to be displayed properly using Two's Complement. So the bit that has been marked red is basically discarded and not stored in the target register - instead it gets stored in the [bold Carry Flag]. The Carry Flag is basically always the "33rd" bit. Actually This is not a 1 bit value but it is a single bit at offset 0 in a 32 bit register known as the [bold FLAGS register]. This is where all the flags are stored - so obviously there are far more flags than just the ones listed above but most of them are not of any relevance for writing user land applications. The [bold Parity Flag] is set to 1 if the number of 1-bits in the right most 8 bits of the result contains an even number of 1-bits. It is set to 0 otherwise. It is basically the result of [monospace XOR]ing those 8 bits with each other and eventually inverting the result. The [bold Zero Flag] is set when the the result is equal to zero - very useful. The [bold Sign Flag] is the left most bit of he 32-bit result - it represents its sign. The [bold Overflow Flag] is set when an overflow occured.]
@@ -278,7 +278,7 @@ start:
 [paragraph The first change you can see is the [monospace calculate_sum] label that has been added. It is necessary so we have marker in the code which we can use to call the function. The next change is the [monospace mov ebx, [esp + 4]] part. The brackets mean that we perform a [bold memory access] (RAM). It is the x86 ASM equivalent of the C/C++ [monospace *] operator to dereference pointers. So in this case the pointer is [monospace esp + 4]. The x86 architecture supports statements of the form [monospace register + constant_offset] for this purpose. So in this case the address [monospace esp + 4] is calculated and dereferenced. But how many bytes are read and stored in [monospace ebx]? The register is 32-bits in size so 4 bytes are read, beginning at the address [monospace esp + 4], so the bytes [monospace esp + 4], [monospace esp + 5], [monospace esp + 6], [monospace esp + 7] are stored in [monospace ebx] - but in what order? Which byte goes where? The x86 architecture uses the so called [bold Little Endian] byte order in memory. In this order the least significant byte is stored first in memory:]
 
 [table[bitAddition]
-[row [column [monospace <span class="red">1</span>001001100010000110000000111001<span class="green">0</span>]]]
+[row [column [monospace [group[red] 1]001001100010000110000000111001[group[green] 0]]]]
 ]
 
 [paragraph In this case the red bit is the [bold most significant bit] and the green bit is the [bold least significant bit]. Significance means how much of a difference the bit can make to the value of the integer. The most significant bit has a value of [latex 2^{31}] whereas the least significant bit only makes a difference of [latex 2^0 = 1]. We do not have to worry about as long as we stick to writing values of size [latex n \in \mathbb{N}] to memory and reading [latex n] bytes later. When we read bytes from memory with an instruction like [monospace mov ebx, [esi]] the x86 microprocessor reads 4 bytes in Little Endian order, of course. The only time we have to worry about it is we have an integer of [latex n > 1] bytes in memory and we want to access [latex m] particular bytes of it with [latex m \in \mathbb{N} \land 1 \le m < n]. In that case we have to know what Endianess the underlying system uses so we read the right bytes. The opposite of Little Endian byte order is [monospace Big Endian]. In Big Endian byte order the most significant byte is stored first - just like we do in normal hexadecimal and decimal notation. We write down the number 931 to express [latex 9 \cdot 100 + 3 \cdot 10 + 1 \cdot 1]. If we applied the Little Endian philosophy to this we would write 139 instead of 931, so to say. Let us have a look at a few examples of how bytes are stored in memory with different [bold "Endianesses"]:]
@@ -432,7 +432,7 @@ start:
 
 [paragraph At first we are going to take a look at how to write assembly for the popular Windows operating system. We are going to check out the Microsoft (R) Macro Assembler Version 9.00.21022.08 (short [bold MASM]), the great open source program flat assembler 1.67.27 for Windows (short [bold FASM]) and the netwide assembler 2.04 RC 1 (short [bold NASM]).]
 
-<h3 id="masm">MASM</h3>
+[subsection MASM]
 
 [paragraph This is the most used assembler for writing assembly code for the Microsoft Windows operating systems. Before I am going to just throw the code right into your face I would like to dedicate a few words to what is known as [bold MASM32] - a great source of confusion and frustration.]
 
@@ -587,7 +587,7 @@ Arithmetic sum for the limit 20 is 210
 D:\Code\Assembly\calculate_sum\binary>
 ]
 
-<h3 id="fasm">FASM</h3>
+[subsection FASM]
 
 [paragraph Flat assembler is a great multi platform open source program which you can download at <a href="http://flatassembler.net/download.php">http://flatassembler.net/download.php</a>. Here is the equivalent code:]
 
@@ -665,7 +665,7 @@ D:\Downloads\fasmw16727>
 
 [paragraph The output of the executable is the same as before so we do not need to go over it again.]
 
-<h3 id="nasm">NASM</h3>
+[subsection NASM]
 
 [paragraph The netwide assembler is another multi platform open source assembler which I do not have much experience with. Windows include files come in a separate package known as NASMX and unluckily it is outdated and does not work well with the current version of NASM (produces warnings, possibly errors). I tried to use it at first for this small example but eventually I gave up on it and went the hard way. I shall link NASMX here aswell in case it gets updated at some point but I cannot recommend getting it right now except as example code. Go to <a href="http://nasm.sourceforge.net/">http://nasm.sourceforge.net/</a> to download NASM and <a href="http://www.asmcommunity.net/projects/nasmx/">http://www.asmcommunity.net/projects/nasmx/</a> to get the outdated NASMX. I am using the Microsoft linker with the NASM object file output in this example but you can use other linkers aswell. The NASMX package comes with a different linker but I will stick with Microsoft's current linker which comes with Visual Studio 2008. Here is the equivalent code in NASM which is "rawer" than the MASM and FASM one:]
 
@@ -742,7 +742,7 @@ D:\Code\Assembly\binaries\32\link.exe /MACHINE:X86 /NODEFAULTLIB /NOLOGO /ENTRY:
 
 [paragraph Now that we have covered Windows x86 programming with various assemblers it is time to find out how to implement this program on Linux/BSD, too. FASM runs on x86 Linux/BSD and NASM will run on any Linux/BSD aswell but I have already demonstrated the syntax for those so I am just going to cover the infamous [bold GNU assembler version 2.17] in this section.]
 
-<h3 id="as">as</h3>
+[subsection as]
 
 [paragraph [monospace as] is the command to call the GNU assembler (short [monospace gas]) on Linux/BSD systems. It comes with any sane distro so I really do not need to tell you where to get it. Consult [monospace apt-get] or [monospace emerge] otherwise. It is generally agreed upon that the [monospace gas] syntax is very archaic and esoteric. It uses the [bold AT&T syntax] (as opposed to the [bold Intel syntax] I have been using so far) in which basically the order of all arguments for the x86 instructions is reversed. Additionally it uses customised instruction names with -b, -w, -l suffixes to imply byte/word/long (1 byte, 2 bytes, 4 bytes). Additionally it introduces terribly redundant and complicated notations for offsets and cryptic register and number prefixes. Luckily, a feature was introduced which enables crude Intel syntax support. I am going to use this feature in the following code. Unluckily I had to use a silly hack to make it work properly because I could not find proper documentation on replacements for standard operations which are not possible in the Intel syntax mode using the conventional ways. I am going to show you some examples of conventional [monospace gas] code later. For the record: I am using [monospace GNU assembler version 2.17 (i486-linux-gnu) using BFD version 2.17 Debian GNU/Linux] and [monospace collect2 version 4.1.2 20061115 (prerelease) (Debian 4.1.1-21) (i386 Linux/ELF)] in this example. Here is my code:]
 
@@ -1211,7 +1211,7 @@ div ebx
 
 [paragraph The mantissa expresses a fraction of the form 1.x where x is expressed by the mantissa. The numbers are encoded using the Big Endian format (most significant bit first). Let [latex s] stand for the sign bit, [latex be] for the biased exponent and [latex m_i] with [latex i \in \{1, 2 \ldots 23\}] for the mantissa bits [latex m_1 m_2 \ldots m_{23}] (they are read from the left to the right), then the value most IEEE-754 encoded reals represent can be determined using the following formula:]
 
-<p class="math">[latex \mbox{ value } = (-1)^s \cdot 2^{be - 127} \cdot (1 + \sum_{i = 1}^{23} m_i \cdot 2^{-i})]]
+[center-math \mbox{ value } = (-1)^s \cdot 2^{be - 127} \cdot (1 + \sum_{i = 1}^{23} m_i \cdot 2^{-i})]
 
 [paragraph The [latex (-1)^s] part simply changes the sign according to the sign bit. The value is negative if the sign bit is set to 1 and positive if it is set to 0. [latex 2^{be - 127}] is where the the power of 2 gets expressed through the actual exponent [latex e = be - 127]. The "bias" I was talking about is a necessity to allow the exponent to be negative. Otherwise we would have positive/zero exponents only and we would be unable to express numbers [latex r \in \mathbb{R} \land |r| < 1] since this requires negative powers of 2. The mantisa represents the binary digits to the right of the point in a number like [latex 1.1101_2] which had the leading "1." simply chopped off. Let us manually convert the number 149.8 to the IEEE-754 single precision format. At first we require a binary representation of this decimal number. We examine the part to the left of the point first and repeatedly perform divisions by 2, splitting the result into an integer part and a rational part after each step. Then we repeat the procedure with this integer part until it eventually becomes zero.]
 
@@ -1237,23 +1237,23 @@ div ebx
 
 [paragraph We discovered a periodic pattern which means that 0.8 cannot be written in binary notation in a finite number of digits without any loss of precision. We conclude:]
 
-<p class="math">[latex 149.8_{10} = 10010101.\overline{1100}_2]]
+[center-math 149.8_{10} = 10010101.\overline{1100}_2]
 
 [paragraph We can prove this mathematically by making use of geometric series with [latex a \in \mathbb{R} \land 0 < a < 1]:]
 
-<p class="math">[latex \sum_{i = 0}^{\infty} a^i = \frac{1}{1 - a}]]
+[center-math \sum_{i = 0}^{\infty} a^i = \frac{1}{1 - a}]
 
 [paragraph All we need to do is to perform some index shifts and splitting up of sums to show the desired result:]
 
-<p class="math">[latex 0.\overline{1100}_2 = \sum_{i = 1}^{\infty} (1 \cdot 2^{- (4i - 3)} + 1 \cdot 2^{- (4i - 2)} + 0 \cdot 2^{- (4i - 1)} + 0 \cdot 2^{- (4i)}) = \frac{8}{15} + \frac{4}{15} = \frac{4}{5} = 0.8]]
+[center-math 0.\overline{1100}_2 = \sum_{i = 1}^{\infty} (1 \cdot 2^{- (4i - 3)} + 1 \cdot 2^{- (4i - 2)} + 0 \cdot 2^{- (4i - 1)} + 0 \cdot 2^{- (4i)}) = \frac{8}{15} + \frac{4}{15} = \frac{4}{5} = 0.8]
 
 [paragraph The next step in the conversion process is shifting our binary representation of the number to the left or to the right such that it has the form "1.x". We have to keep track of the number of shifting steps we performed and of the direction aswell. We store this information in the exponent of a power of two:]
 
-<p class="math">[latex 10010101.\overline{1100}_2 = 2^7 \cdot 1.0010101\overline{1100}_2 = (-1)^0 \cdot 2^{134 - 127} \cdot (1 + 0.0010101\overline{1100}_2)]]
+[center-math 10010101.\overline{1100}_2 = 2^7 \cdot 1.0010101\overline{1100}_2 = (-1)^0 \cdot 2^{134 - 127} \cdot (1 + 0.0010101\overline{1100}_2)]
 
 [paragraph As you can see I algebraically manipulated the term so it matches the pattern in the original formula I showed to you. Now we can simply read off the values:]
 
-<p class="math">[latex s = 0 \land be = 134 \land m = (m_1, m_2 \ldots m_{23}) = (0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0 \ldots)]]
+[center-math s = 0 \land be = 134 \land m = (m_1, m_2 \ldots m_{23}) = (0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0 \ldots)]
 
 [paragraph We are nearly done, we simply need to convert the biased exponent to its 8-bit binary representation now:]
 
@@ -1315,7 +1315,7 @@ faddp st(1), st(0)
 
 [table[function]
 [row [column Position][column Value]]
-[row [column [monospace st(0)]][column [monospace <span class="red">1.0</span>]]]
+[row [column [monospace st(0)]][column [monospace [group[red] 1.0]]]]
 [row [column [monospace st(1)]][column [monospace undefined]]]
 [row [column [monospace st(2) - st(7)]][column [monospace undefined]]]
 ]
@@ -1324,7 +1324,7 @@ faddp st(1), st(0)
 
 [table[function]
 [row [column Position][column Value]]
-[row [column [monospace st(0)]][column [monospace <span class="red">0.0</span>]]]
+[row [column [monospace st(0)]][column [monospace [group[red] 0.0]]]]
 [row [column [monospace st(1)]][column [monospace 1.0]]]
 [row [column [monospace st(2) - st(7)]][column [monospace undefined]]]
 ]
@@ -1333,7 +1333,7 @@ faddp st(1), st(0)
 
 [table[function]
 [row [column Position][column Value]]
-[row [column [monospace st(0)]][column [monospace <span class="red">1.0</span>]]]
+[row [column [monospace st(0)]][column [monospace [group[red] 1.0]]]]
 [row [column [monospace st(1)]][column [monospace 1.0]]]
 [row [column [monospace st(2) - st(7)]][column [monospace undefined]]]
 ]
@@ -1343,7 +1343,7 @@ faddp st(1), st(0)
 [table[function]
 [row [column Position][column Value]]
 [row [column [monospace st(0)]][column [monospace 1.0]]]
-[row [column [monospace st(1)]][column [monospace <span class="red">2.0</span>]]]
+[row [column [monospace st(1)]][column [monospace [group[red] 2.0]]]]
 [row [column [monospace st(2) - st(7)]][column [monospace undefined]]]
 ]
 
@@ -1396,7 +1396,7 @@ faddp st(1), st(0)
 
 [table[function]
 [row [column Position][column Value]]
-[row [column [monospace st(0)]][column [monospace <span class="red">0.123</span>]]]
+[row [column [monospace st(0)]][column [monospace [group[red] 0.123]]]]
 [row [column [monospace st(1) - st(7)]][column [monospace undefined]]]
 ]
 
@@ -1404,7 +1404,7 @@ faddp st(1), st(0)
 
 [table[function]
 [row [column Position][column Value]]
-[row [column [monospace st(0)]][column [monospace <span class="red">4.556456823</span>]]]
+[row [column [monospace st(0)]][column [monospace [group[red] 4.556456823]]]]
 [row [column [monospace st(1)]][column [monospace 0.123]]]
 [row [column [monospace st(2) - st(7)]][column [monospace undefined]]]
 ]
@@ -1413,7 +1413,7 @@ faddp st(1), st(0)
 
 [table[function]
 [row [column Position][column Value]]
-[row [column [monospace st(0)]][column [monospace <span class="red">4.679456826</span>]]]
+[row [column [monospace st(0)]][column [monospace [group[red] 4.679456826]]]]
 [row [column [monospace st(1) - st(7)]][column [monospace undefined]]]
 ]
 
