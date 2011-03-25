@@ -18,7 +18,7 @@
 
 [paragraph So, what are we dealing with here? The IA-32 microprocessor is basically [bold register machine] which uses a [bold CISC] (complex instruction set computer) instruction set. At first I am going to explain what a register machine is. After that I will move on to the CISC part. A register machine is a computing device which stores results of arithmetic operations and such primarily in so called [bold registers]. These are small but highly efficient storage units inside the processor. When you write assembly you deal a lot with them. They are simple hardware implementations of integers. They are incapable of holding a lot of data at once but they are essential as temporary placeholders used in most instructions executed by the processor. In the terms of the [bold memory hierarchy] of contemporary computers they are at the very top. The hierarchy looks like this:]
 
-[list
+[enumeration
 [element CPU registers]
 [element CPU cache]
 [element RAM (random access memory)]
@@ -111,7 +111,7 @@
 
 [paragraph So to solve this problem smart computer scientists came up with [bold Two's Complement]. It is similar to One's Complement but all negative numbers have an additional offset of 1. This way there is no redundant zero and you can flawlessly perform arithmetic operations without having to worry about the sign really. Two's Complement is the system used by all important mainstream CPUs in desktop computers including the x86 architecture - so be sure to understand this. [bold There is no inherent difference between storing an unsigned integer and a signed integer in a 32-bit register - it is all about how you treat it.] The 32-bit value 11111111111111111111111111111111 can either stand for [math 2^{32} - 1 = 4294967295] (which is the greatest unsigned integer that can be represented with 32 bits) or, if interpreted as negative number, for -1. To calculate the Two's Complement representation of [math -n] with [math n \in \mathbb{N}] you need to:]
 
-[list
+[enumeration
 [element Subtract 1]
 [element Invert bits]
 ]
@@ -147,7 +147,7 @@ our_loop:
 
 [paragraph Most of these lines represent an instruction that gets executed by the processor. The pattern is [monospace instruction @[argument 1@], @[argument 2@], ...]. Let's go through it line by line. [monospace mov eax, 1] calls the instruction [monospace mov] with the arguments [monospace eax] and [monospace 1]. The [monospace mov destination, source] operator is kind of like the assignment operator in C++. It copies the value of [monospace source] to [monospace destination]. In this case it writes the constant 1 to the 32-bit general purpose register [monospace eax]. That is one of the registers we can use for all kinds of calculations without breaking anything. Here is a list of all the 32-bit general purpose registers of the x86 architecture:]
 
-[list
+[enumeration
 [element [monospace eax]]
 [element [monospace ebx]]
 [element [monospace ecx]]
@@ -346,14 +346,14 @@ start:
 
 [paragraph We will get back to what a return address is and how we allocate space for local variables later. At first I would like to discuss the necessity of the stack to pass arguments to functions. You might wonder: "Why do you not simply pass the arguments inside registers?" There actually is a special type of calling convention for functions which does use this mechanism and it is known as [monospace fastcall] - because it is extremely fast since it uses registers only for the arguments. This, too, is not yet the point to discuss calling conventions, though. The problem with having all your arguments in registers is that you have a very limited amount of registers but a large amount of functions which call each other in complicated nested ways so you will eventually run out of registers to use in one way or the other. Recursive function calls of arbitrary call depth without storing the arguments somewhere in memory is physically not possible. This is why we pass most arguments on the stack. We push the arguments on the "top", call our function and remove them after that. The x86 architecture stores the current pointer to the top of the stack, the stack pointer, in the [monospace esp] register. So [monospace mov eax, @[esp@]] performs a memory access and copies the value of the top element of the stack into the [monospace eax] register. We are dealing with a 32-bit architecture so all elements on the stack are of the same size which is 4 bytes. This is why [monospace esp] will usually have a value which is a multiple of 4. You might expect that [monospace mov eax, @[esp - 4@]] might access the element right "below" the top one - but that is not so. On the x86 architecture the next element below the top is actually stored at [monospace esp + 4] so we have to use [monospace mov eax, @[esp + 4@]] to copy its value to [monospace eax]. The third element would be at [monospace esp + 8], the fourth at [monospace esp + 12] and so on. I am not entirely sure why they picked this somewhat counter-intuitive order for the stack - probably because they thought that addition is more comfortable to deal with to access arguments. The x86 instruction to push a new argument on top of the stack is [monospace push]. It takes one argument which can be a register or an immediate value, for example. An [bold immediate value] is any constant value like [monospace 2] or [monospace 0x00ff1234] which is directly encoded into the instruction. So what [monospace push eax] does is:]
 
-[list
+[enumeration
 [element [monospace sub esp, 4] (decrease the stack pointer by the word size of the microprocessor to make space for the new top element)]
 [element [monospace mov @[esp@], eax] (write the value of [monospace eax] to the memory at the address contained in [monospace esp] - the top of the stack is now equal to [monospace eax])]
 ]
 
 [paragraph You can basically replace [monospace push] with those two instructions all the time but x86 is a CISC architecture so we save space by using [monospace push] instead. [monospace sub] is short for subtract and as you might have guessed already, it performs a subtraction like [monospace add] performs an addition. The arguments are intuitive, [monospace sub register1, register2] is equivalent to the C++ code [monospace register1 -= register;] or [monospace register1 = register1 - register2;]. The x86 instruction to pop an element off the stack is called [monospace pop]. Like [monospace push], it takes one argument, too. Usually it is a register so let us check out what [monospace pop ebx] does:]
 
-[list
+[enumeration
 [element [monospace mov ebx, @[esp@]] (read 4 bytes from the memory at the address specified by the register [monospace esp] and store them in [monospace ebx])]
 [element [monospace add esp, 4] (add 4 to the stack pointer so it makes the element "below" the top one the new top element of the stack)]
 ]
@@ -361,7 +361,7 @@ start:
 [paragraph So, to get back to the piece of x86 ASM we were previously discussing: What [monospace mov ebx, @[esp + 4@]] really does is copying the first argument passed to the function into the [monospace ebx] register. The first argument is the second element of the stack, the second argument is the third and so on. So what does the top of the stack contain? What is stored at [monospace @[esp@]]? This is the so called [bold return address] which is necessary for a function to know where it was originally called from so [monospace eip], the instruction pointer, can be set to the right value after the function returns. We want our program to resume execution with the instruction after our call, after all.]
 [paragraph The [monospace start] label is not really relevant for the understanding of the principle but I simply wanted to point out where the execution actually started in case somebody got confused by the stream of x86 ASM instructions. The assembly code [monospace push 20], [monospace call calculate_sum] first pushes the immediate value 20 on top of the stack and then calls the function. Remember that we only see this label in our assembly language code. It does not exist is such in the actual binary file. In the executable file you will simply see the call with an address after it. This address points to the first instruction of the function we marked with the label [monospace calculate_sum]. In this case it is the instruction [monospace mov eax, 1]. This is what [monospace call address] actually does:]
 
-[list
+[enumeration
 [element [monospace esp -= 4;] (make space for the return address on the stack)]
 [element [monospace *esp = address_of_next_instruction;] (stores the address of the instruction [bold after] the call on the stack)]
 [element [monospace eip = address;] (modify the instruction pointer so it resumes execution in the body of the function)]
@@ -369,14 +369,14 @@ start:
 
 [paragraph As you can see I did not use x86 ASM instructions to describe what this function does. Instead, I resorted to the C++ pseudo code I use occasionally. This is because we cannot modify [monospace eip] like a normal register. It takes a jump or a call (which is similar to a jump) to achieve that. What the combination of [monospace push 20] and [monospace call calculate_sum] really translates to in C++ is [monospace calculate_sum(20);]. The function [monospace calculate_sum] is called with the argument 20 - which is what we originally wanted. You will see the push/call construct quite frequently. usually functions have even more than one argument so you will see multiple pushes prior to a call. Perhaps you have noticed that another element has been added to the function. The [monospace ret] instruction is used to [bold return] from a function after it has been called. Additionally it can take an argument which in the case of [monospace ret 4] is equal to 4. Let us have a look at what this [monospace ret argument] instruction does:]
 
-[list
+[enumeration
 [element [monospace eip = *esp] (copy the instruction pointer from the stack back to the instruction pointer to resume execution at the instruction after the call)]
 [element [monospace esp += 4 + argument;] (remove the return address from the stack and, if necessary, arguments that were pushed onto the stack for the function)]
 ]
 
 [paragraph If a function takes [math n \in \mathbb{N}] arguments you will usually return from it with the instruction [math \mbox{ ret } 4 \cdot n]. If the function is nullary (if it takes no arguments), you can simply use [monospace ret] instead of [monospace ret 0]. You also might have noticed the additional [monospace mov eax, ecx] I inserted prior to the [monospace ret 4]. I did this because it is a common calling convention to return the result of a function in the [monospace eax] register which is the first of the 8 (or rather 7 without [monospace esp]) general purpose registers. Of course you do not have to do this but if you interface with C/C++ code you will have to know this of course.  Now that we have covered the basics of calling and returning we can move on to the topic of calling conventions. You might remember me talking about the [monospace fastcall] convention - it is one of them. If you are an experienced C/C++ programmer you should already be familiar with a few of them. They differ in the following regards:]
 
-[list
+[enumeration
 [element How do arguments get passed? On the stack? In registers?]
 [element In what order are arguments passed?]
 [element Who is responsible for fixing the stack after the function has processed the arguments?]
@@ -1204,7 +1204,7 @@ div ebx
 
 [paragraph Now that we have covered the most important integer operations we should move on to floating point instructions. The CPU contains many different units which work together when a program is executed. Instructions like [monospace add], [monospace sub], [monospace xor], [monospace shl], [monospace mul] and [monospace idiv] are all executed on the so called [bold Arithmetic Logical Unit] (ALU). The operations we are going to concern ourselves with are executed in a completely different unit. It is called the [monospace Floating Point Unit] (FPU). This is where stuff like [monospace 0.942 - 7.183 = -6.241] is calculated. The x86 architecture implements the IEEE-754 standard ([link http://en.wikipedia.org/wiki/IEEE_floating-point_standard]) and offers support for three different precision formats:]
 
-[list
+[enumeration
 [element Single precision 32-bit floating point numbers ([monospace float] in C/C++)]
 [element Double precision 64-bit floating point numbers ([monospace double] in C/C++)]
 [element Extended precision 80-bit floating point numbers ([monospace long double] in C/C++)]
