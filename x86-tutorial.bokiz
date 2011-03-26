@@ -47,8 +47,7 @@
 [paragraph A bit is simply the smallest digital piece of information possible. To us, it is a rather abstract unit which can have two values, zero or one. A byte is composed of a certain number of bits. On all mainstream architectures a byte is composed of exactly 8 bits. In this document we focus on the x86 32-bit architecture. The 32-bit part means that the [bold word size] of this processor is 32 bits. The word size of a microprocessor tells you what size most registers and operands are. So in this case all [bold general purpose registers] are 32 bits = 4 bytes in size. It would be more precise to say "octet" instead of byte in that case, which is the terminology you usually encounter in literature on the subject of networking. In this text I will stick to bytes, though. General purpose means that we, the programmers, can pretty much use these registers as we want without breaking anything. They are meant to be used for all major calculations. There are special registers such as the [bold stack pointer], which may not be used in such a way. In fact, that would usually result in a crash at some point, but we will get back to that later. Our registers consist of 32 single bits which can each assume two different values. This means that each register can assume one of [math 2^{32}] (that is: 2 to the power of 32) different values at a time.]
 
 [paragraph There are different systems of representing numbers using digits (which can actually be arbitrary symbols) such as our decimal system. At this point it is important to introduce the concept of the [bold positional notation]. Positional notation is a method which takes a base [math b \in \mathbb{N}] and a set of digits [math D = \bigcup_{i = 0}^{b - 1} \{d_i\}] with values [math v : D \to \mathbb{N}], [math v(d_i) = i]. I hope I did not scare anybody away with those equations - I should probably clarify. [math b] is a natural number - a positive integer like 1, 2, 3, etc. [math D] is the union of the digits which are associated with the numerical values 0 to [math b - 1]. In a positional system the number which is composed of the digits [math d_{(a_n)} \ldots d_{(a_1)}] actually represents the natural number [math \sum_{i = 0}^{b - 1} v(d_{(a_i)}) b^i = \sum_{i = 0}^{b - 1} a_i b^i].]
-[paragraph The decimal system is actually a positional system with [math b = 10]. So we have the digits [math $D_{10} = \{0, 1, 2 \ldots 9\}] with the corresponding values. So according to the equation the decimal number 913 represents the natural number [math 9 \cdot 100 + 1 \cdot 10 + 3 \cdot 1 = 913].]
-
+[paragraph The decimal system is actually a positional system with [math b = 10]. So we have the digits [math $D_{10} = \{0, 1, 2 \ldots 9\}] with the corresponding values. According to the equation the decimal number 913 represents the natural number [math 9 \cdot 100 + 1 \cdot 10 + 3 \cdot 1 = 913].]
 
 [paragraph Now that was fairly obvious but let us move on to other systems such as the hexadecimal one, which is quite frequently used in the world of programming, especially in assembly languages. In the hexadecimal system we deal with the base [math b = 16] and the digits [math D_{16} = \{0 \ldots 9, A, B, C, D, E, F\}]. So A stands for 10, B for 11, and so on. So the hexadecimal number F4D7 actually represents the natural number [math 15 \cdot 16^3 + 4 \cdot 16^2 + 13 \cdot 16^1 + 7 \cdot 16^0 = 15 \cdot 4096 + 4 \cdot 256 + 13 \cdot 16 + 7 \cdot 1 = 61440 + 1024 + 208 + 7 = 62679].]
 
@@ -618,22 +617,22 @@ D:\Code\Assembly\calculate_sum\binary>
 format PE Console 4.0
 entry start
 
-include \'D:\Downloads\fasmw16727\INCLUDE\win32a.inc\'
-include \'D:\Downloads\fasmw16727\INCLUDE\macro\masm.inc\'
+include 'D:\Downloads\fasmw16727\INCLUDE\win32a.inc'
+include 'D:\Downloads\fasmw16727\INCLUDE\macro\masm.inc'
 
 option prologue:none
 option epilogue:none
 
-section \'.data\' data readable writeable
+section '.data' data readable writeable
 
-	sum_string db \'Arithmetic sum for the limit %d is %d\', 10, 0
+	sum_string db 'Arithmetic sum for the limit %d is %d', 10, 0
 
-section \'.bss\' readable writeable
+section '.bss' readable writeable
 
 	buffer db 64 dup (?)
 	bytes_written dd ?
 
-section \'.code\' code readable executable
+section '.code' code readable executable
 
 	proc calculate_sum limit
 		xor esi, esi
@@ -866,12 +865,12 @@ main_loop:
 
 [section Partial Registers]
 
-[paragraph One thing I did not tell you on purpose about until now are the partial registers of the x86 architecture. This is because they frequently do harm and slow down programs when used incorrectly. On the x86 architecture it is possible to access lower parts of all general purpose registers according to the following pattern which I am going to demonstrate on [monospace eax]:]
+[paragraph One thing I did not tell you about, on purpose, until now, are the [bold partial registers] of the x86 architecture. This is because they frequently do harm and slow down programs when used incorrectly. On the x86 architecture it is possible to access lower parts of all general purpose registers according to the following pattern which I am going to demonstrate on [monospace eax]:]
 
 [table[function]
 [row [column Bits 31 - 24][column Bits 23 - 16][column Bits 15 - 8][column Bits 7 - 0]]
 [row [column[4] [monospace eax]]]
-[row [column[2] ][column[2][monospace ax]]]
+[row [column[2] ][column[2] [monospace ax]]]
 [row [column[2] ][column [monospace ah]][column [monospace al]]]
 ]
 
@@ -879,26 +878,26 @@ main_loop:
 
 [table[function]
 [row [column Bits 31 - 24][column Bits 23 - 16][column Bits 15 - 8][column Bits 7 - 0]]
-[row[4] [monospace eax]]
+[row [column[4] [monospace eax]]]
 [row [column[2] ][column[2] [monospace ax]]]
 [row [column[2] ][column [monospace ah]][column [monospace al]]]
 [row [column[4] [monospace ebx]]]
-[row [column[2] ][column[2][monospace bx]]]
+[row [column[2] ][column[2] [monospace bx]]]
 [row [column[2] ][column [monospace bh]][column [monospace bl]]]
 [row [column[4] [monospace ecx]]]
-[row [column[2] ][column[2][monospace cx]]]
+[row [column[2] ][column[2] [monospace cx]]]
 [row [column[2] ][column [monospace ch]][column [monospace cl]]]
 [row [column[4] [monospace edx]]]
-[row [column[2] ][column[2][monospace dx]]]
+[row [column[2] ][column[2] [monospace dx]]]
 [row [column[2] ][column [monospace dh]][column [monospace dl]]]
 [row [column[4] [monospace ebp]]]
-[row [column[2] ][column[2][monospace bp]]]
+[row [column[2] ][column[2] [monospace bp]]]
 [row [column[4] [monospace esp]]]
-[row [column[2] ][column[2][monospace sp]]]
+[row [column[2] ][column[2] [monospace sp]]]
 [row [column[4] [monospace esi]]]
-[row [column[2] ][column[2][monospace si]]]
+[row [column[2] ][column[2] [monospace si]]]
 [row [column[4] [monospace edi]]]
-[row [column[2] ][column[2][monospace di]]]
+[row [column[2] ][column[2] [monospace di]]]
 ]
 
 [paragraph The problem with using partial registers in 32-bit code is that they can cause so called [bold partial register stalls]. Reading from partial registers and writing to partial registers causes more dependencies than doing the same to the full registers. This can stall the execution pipelines of the processor which results in a slowdown of your code. Understanding what the execution pipeline is and how it works on modern CPUs requires a lot of explaining and it is not yet the time to cover this topic. So all you should keep in mind for now is that you should always avoid using partial registers. There usually is a faster solution which minimises partial register usage - usually totally eliminating it. Both the Intel Optimization Manual and the AMD Software Optimization Guide strongly discourage the use of partial registers for this very reason. Here are a few examples of how partial registers work:]
@@ -1138,8 +1137,6 @@ mul edx
 ]
 
 [paragraph Multiplications used to be considerably more expensive than addition and subtraction. Multiplication is considerably more expensive than say addition or subtraction in terms of execution time. The [monospace imul] instruction is used for the multiplication of signed integers and it supports more operands. Like [monospace mul], it can store the result in [monospace edx:eax], taking only a single argument. But it can also take multiple registers and even an immediate value but it will discard the upper 32-bits of the result then. Example:]
-
-2147483647
 
 [code[assembly]
 mov eax, -2
